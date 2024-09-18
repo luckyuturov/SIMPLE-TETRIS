@@ -129,6 +129,60 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  void moveShapeLeft() {
+    setState(() {
+      // Проверяем, можно ли двигать фигуру влево
+      bool canMoveLeft = currentShape![currentRotation].every((point) {
+        int newCol = currentColumn + point[1] - 1;
+        return newCol >= 0 && gameBoard[currentRow + point[0]][newCol] == 0;
+      });
+
+      if (canMoveLeft) {
+        currentColumn--; // Двигаем фигуру влево
+      }
+    });
+  }
+
+  void moveShapeRight() {
+    setState(() {
+      // Проверяем, можно ли двигать фигуру вправо
+      bool canMoveRight = currentShape![currentRotation].every((point) {
+        int newCol = currentColumn + point[1] + 1;
+        return newCol < columns && gameBoard[currentRow + point[0]][newCol] == 0;
+      });
+
+      if (canMoveRight) {
+        currentColumn++; // Двигаем фигуру вправо
+      }
+    });
+  }
+
+  void moveLeft() {
+    setState(() {
+      bool canMoveLeft = currentShape![currentRotation].every((point) {
+        int newCol = currentColumn + point[1] - 1;
+        return newCol >= 0 && gameBoard[currentRow + point[0]][newCol] == 0;
+      });
+
+      if (canMoveLeft) {
+        currentColumn--; // Двигаем фигуру влево
+      }
+    });
+  }
+
+  void moveRight() {
+    setState(() {
+      bool canMoveRight = currentShape![currentRotation].every((point) {
+        int newCol = currentColumn + point[1] + 1;
+        return newCol < columns && gameBoard[currentRow + point[0]][newCol] == 0;
+      });
+
+      if (canMoveRight) {
+        currentColumn++; // Двигаем фигуру вправо
+      }
+    });
+  }
+
   void showGameOverDialog() {
     showDialog(
       context: context,
@@ -185,56 +239,65 @@ class _MyHomePageState extends State<MyHomePage> {
     final cellSize = cellWidth < cellHeight ? cellWidth : cellHeight;
 
     return Scaffold(
-      // body: GestureDetector(
-      //   onTap: rotateShape, // Добавляем обработку нажатия для поворота фигуры
-        body: SafeArea(
-          child: Column(
-            children: [
-              Container(
-                height: 100,
-                color: Colors.black12,
-                alignment: Alignment.center,
-                child: const Text(
-                  'Информация',
-                  style: TextStyle(fontSize: 20, color: Colors.black),
-                ),
+      body: SafeArea(
+        child: Column(
+          children: [
+            Container(
+              height: 100,
+              color: Colors.black12,
+              alignment: Alignment.center,
+              child: const Text(
+                'Информация',
+                style: TextStyle(fontSize: 20, color: Colors.black),
               ),
-              Expanded(
-                child: GestureDetector(
-                  onTap: rotateShape, // Обрабатываем нажатия только на игровом поле
-                  child: Center(
-                    child: GridView.builder(
-                      physics: const NeverScrollableScrollPhysics(),
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: columns,
-                        childAspectRatio: 1,
-                      ),
-                      itemCount: columns * rows,
-                      itemBuilder: (context, index) {
-                        int row = index ~/ columns;
-                        int col = index % columns;
-
-                        bool isFixedBlock = gameBoard[row][col] == 1;
-                        bool isShapeCell = currentShape![currentRotation].any((point) {
-                          return row == currentRow + point[0] && col == currentColumn + point[1];
-                        });
-
-                        return Container(
-                          margin: const EdgeInsets.all(1),
-                          decoration: BoxDecoration(
-                            color: isShapeCell || isFixedBlock ? Colors.blue : Colors.grey[300],
-                            border: Border.all(color: Colors.black),
-                          ),
-                        );
-                      },
+            ),
+            Expanded(
+              child: GestureDetector(
+                onTap: rotateShape, // Поворот фигуры при нажатии на игровое поле
+                onHorizontalDragEnd: (details) {
+                  if (details.primaryVelocity != null) {
+                    // Если свайп влево
+                    if (details.primaryVelocity! > 0) {
+                      moveRight();
+                    }
+                    // Если свайп вправо
+                    else if (details.primaryVelocity! < 0) {
+                      moveLeft();
+                    }
+                  }
+                },
+                child: Center(
+                  child: GridView.builder(
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: columns,
+                      childAspectRatio: 1,
                     ),
+                    itemCount: columns * rows,
+                    itemBuilder: (context, index) {
+                      int row = index ~/ columns;
+                      int col = index % columns;
+
+                      bool isFixedBlock = gameBoard[row][col] == 1;
+                      bool isShapeCell = currentShape![currentRotation].any((point) {
+                        return row == currentRow + point[0] && col == currentColumn + point[1];
+                      });
+
+                      return Container(
+                        margin: const EdgeInsets.all(1),
+                        decoration: BoxDecoration(
+                          color: isShapeCell || isFixedBlock ? Colors.blue : Colors.grey[300],
+                          border: Border.all(color: Colors.black),
+                        ),
+                      );
+                    },
                   ),
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
-      // ),
+      ),
     );
   }
 }
