@@ -113,6 +113,22 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
+  // Функция для вращения фигуры
+  void rotateShape() {
+    setState(() {
+      int nextRotation = (currentRotation + 1) % currentShape!.length;
+      bool canRotate = currentShape![nextRotation].every((point) {
+        int newRow = currentRow + point[0];
+        int newCol = currentColumn + point[1];
+        return newRow >= 0 && newRow < rows && newCol >= 0 && newCol < columns && gameBoard[newRow][newCol] == 0;
+      });
+
+      if (canRotate) {
+        currentRotation = nextRotation; // Вращаем фигуру
+      }
+    });
+  }
+
   void showGameOverDialog() {
     showDialog(
       context: context,
@@ -169,50 +185,56 @@ class _MyHomePageState extends State<MyHomePage> {
     final cellSize = cellWidth < cellHeight ? cellWidth : cellHeight;
 
     return Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: [
-            Container(
-              height: 100,
-              color: Colors.black12,
-              alignment: Alignment.center,
-              child: const Text(
-                'Информация',
-                style: TextStyle(fontSize: 20, color: Colors.black),
-              ),
-            ),
-            Expanded(
-              child: Center(
-                child: GridView.builder(
-                  physics: const NeverScrollableScrollPhysics(),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: columns,
-                    childAspectRatio: 1,
-                  ),
-                  itemCount: columns * rows,
-                  itemBuilder: (context, index) {
-                    int row = index ~/ columns;
-                    int col = index % columns;
-
-                    bool isFixedBlock = gameBoard[row][col] == 1;
-                    bool isShapeCell = currentShape![currentRotation].any((point) {
-                      return row == currentRow + point[0] && col == currentColumn + point[1];
-                    });
-
-                    return Container(
-                      margin: const EdgeInsets.all(1),
-                      decoration: BoxDecoration(
-                        color: isShapeCell || isFixedBlock ? Colors.blue : Colors.grey[300],
-                        border: Border.all(color: Colors.black),
-                      ),
-                    );
-                  },
+      // body: GestureDetector(
+      //   onTap: rotateShape, // Добавляем обработку нажатия для поворота фигуры
+        body: SafeArea(
+          child: Column(
+            children: [
+              Container(
+                height: 100,
+                color: Colors.black12,
+                alignment: Alignment.center,
+                child: const Text(
+                  'Информация',
+                  style: TextStyle(fontSize: 20, color: Colors.black),
                 ),
               ),
-            ),
-          ],
+              Expanded(
+                child: GestureDetector(
+                  onTap: rotateShape, // Обрабатываем нажатия только на игровом поле
+                  child: Center(
+                    child: GridView.builder(
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: columns,
+                        childAspectRatio: 1,
+                      ),
+                      itemCount: columns * rows,
+                      itemBuilder: (context, index) {
+                        int row = index ~/ columns;
+                        int col = index % columns;
+
+                        bool isFixedBlock = gameBoard[row][col] == 1;
+                        bool isShapeCell = currentShape![currentRotation].any((point) {
+                          return row == currentRow + point[0] && col == currentColumn + point[1];
+                        });
+
+                        return Container(
+                          margin: const EdgeInsets.all(1),
+                          decoration: BoxDecoration(
+                            color: isShapeCell || isFixedBlock ? Colors.blue : Colors.grey[300],
+                            border: Border.all(color: Colors.black),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
-      ),
+      // ),
     );
   }
 }
