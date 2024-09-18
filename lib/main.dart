@@ -99,6 +99,17 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
+  // Новая функция для проверки и очистки полных строк
+  void checkAndClearFullRows() {
+    setState(() {
+      gameBoard.removeWhere((row) => row.every((cell) => cell == 1));
+      int numClearedRows = rows - gameBoard.length;
+      for (int i = 0; i < numClearedRows; i++) {
+        gameBoard.insert(0, List.generate(columns, (j) => 0)); // Добавляем пустые строки сверху
+      }
+    });
+  }
+
   void moveShapeDown() {
     setState(() {
       bool canMoveDown = currentShape![currentRotation].every((point) {
@@ -112,6 +123,7 @@ class _MyHomePageState extends State<MyHomePage> {
         currentShape![currentRotation].forEach((point) {
           gameBoard[currentRow + point[0]][currentColumn + point[1]] = 1;
         });
+        checkAndClearFullRows();  // Проверяем и очищаем строки
         generateRandomShape();
       }
     });
@@ -138,7 +150,8 @@ class _MyHomePageState extends State<MyHomePage> {
             currentShape![currentRotation].forEach((point) {
               gameBoard[currentRow + point[0]][currentColumn + point[1]] = 1;
             });
-            resetDropSpeed();  // Возвращаем стандартную скорость после завершения быстрого падения
+            checkAndClearFullRows();  // Проверяем и очищаем строки
+            resetDropSpeed();
             generateRandomShape();
           });
           timer.cancel();
@@ -233,10 +246,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final availableHeight = MediaQuery.of(context).size.height -
-        MediaQuery.of(context).padding.top -
-        kBottomNavigationBarHeight;
-
+    final availableHeight = MediaQuery.of(context).size.height - MediaQuery.of(context).padding.top - kBottomNavigationBarHeight;
     final cellWidth = screenWidth / columns;
     final cellHeight = availableHeight / rows;
     final cellSize = cellWidth < cellHeight ? cellWidth : cellHeight;
